@@ -55,12 +55,12 @@
   /* ---------- Nav ---------- */
   header{
     position:sticky; top:0; z-index:50;
-    background:rgba(250,246,238,0.94);
+    background:var(--paper);
     border-bottom:1px solid var(--line);
   }
-  nav{display:flex; align-items:center; justify-content:space-between; padding:18px 0;}
+  nav{position:relative; display:flex; align-items:center; justify-content:space-between; padding:10px 0;}
   .brand{display:flex; align-items:center; gap:12px;}
-  .brand img{height:32px; width:auto;}
+  .brand img{height:62px; width:auto;}
 
   .navlinks{display:flex; align-items:center; gap:26px; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase; font-family:'IBM Plex Mono',monospace;}
   .navlinks a{color:var(--muted); transition:color 0.2s ease; padding:3px 0; border-bottom:1px solid transparent;}
@@ -68,8 +68,27 @@
   .navlinks a.nav-contact{color:var(--ink); border:1px solid var(--ink); padding:8px 14px;}
   .navlinks a.nav-contact:hover, .navlinks a.nav-contact:focus-visible{border-color:var(--orange); color:var(--orange);}
 
-  @media (max-width:920px){.navlinks a:nth-child(2),.navlinks a:nth-child(6){display:none;}}
-  @media (max-width:640px){.navlinks{gap:16px;} .navlinks a:nth-child(3),.navlinks a:nth-child(4){display:none;}}
+  .menu-toggle{
+    display:none; flex-direction:column; justify-content:center; align-items:center; gap:5px;
+    width:36px; height:36px; border:1px solid var(--ink); background:none; padding:0; cursor:pointer; flex-shrink:0;
+  }
+  .menu-toggle span{display:block; width:16px; height:2px; background:var(--ink); transition:transform 0.25s ease, opacity 0.2s ease;}
+  .menu-toggle[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .menu-toggle[aria-expanded="true"] span:nth-child(2){opacity:0;}
+  .menu-toggle[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+
+  @media (max-width:880px){
+    .menu-toggle{display:flex;}
+    .navlinks{
+      position:absolute; top:100%; left:0; right:0;
+      flex-direction:column; align-items:stretch; gap:0;
+      background:var(--paper); border-top:1px solid var(--line); border-bottom:1px solid var(--line);
+      max-height:0; overflow:hidden; transition:max-height 0.3s ease;
+    }
+    .navlinks.is-open{max-height:70vh; overflow-y:auto;}
+    .navlinks a{padding:15px 22px; border-bottom:1px solid var(--line-soft);}
+    .navlinks a.nav-contact{width:auto; margin:14px 22px; text-align:center; padding:11px 14px;}
+  }
 
   /* ---------- Doc meta strip ---------- */
   .doc-meta{
@@ -234,7 +253,10 @@
       <div class="brand">
         <img src="assets/watana-logo-bgr.png" alt="Watan Petroleum">
       </div>
-      <div class="navlinks">
+      <button class="menu-toggle" id="menuToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navlinks">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="navlinks" id="navlinks">
         <a href="#activites">Activités</a>
         <a href="#produits">Produits</a>
         <a href="#installations">Sites</a>
@@ -508,6 +530,19 @@
 </footer>
 
 <script>
+  const menuToggle = document.getElementById('menuToggle');
+  const navlinks = document.getElementById('navlinks');
+  menuToggle.addEventListener('click', () => {
+    const isOpen = navlinks.classList.toggle('is-open');
+    menuToggle.setAttribute('aria-expanded', isOpen);
+  });
+  navlinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      navlinks.classList.remove('is-open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+
   const revealEls = document.querySelectorAll('.reveal');
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
